@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %}
+    左撇子招牌字 | 首页
+{% endblock %}
+
+{% block header_extends %}
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+    <script src="http://cdn.highcharts.com.cn/highcharts/highcharts.js"></script>
+    <script src="http://cdn.hcharts.cn/highcharts/highcharts-3d.js"></script>
+{% endblock %}
+
+{# 当前栏目颜色突出显示 #}
+{% block nav_home_active %}
+    active
+{% endblock %}
+
+{% block content %}
+    <h3 class="home-content">欢迎到访小破站</h3>
+    <!-- 图表容器 DOM -->
+    <div id="container"></div>
+
+    <div id="wrap">
+        <div class="hot-data">
+            <h3>昨日热门点击</h3>
+            <ul>
+                {% for hot_data in yesterday_hot_data %}
+                    <li><a href="{% url 'blog_detail' hot_data.content_object.pk %}">{{ hot_data.content_object.title }}</a>（{{ hot_data.read_num }}）</li>
+                {% empty %}
+                    <li>昨日暂无热门博客</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="hot-data">
+            <h3>今日热门点击</h3>
+            <ul>
+                {% for hot_data in today_hot_data %}
+                    <li><a href="{% url 'blog_detail' hot_data.content_object.pk %}">{{ hot_data.content_object.title }}</a>（{{ hot_data.read_num }}）</li>
+                {% empty %}
+                    <li>今日暂无热门博客</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="hot-data">
+            <h3>一周热门点击</h3>
+            <ul>
+                {% for hot_blog in seven_days_hot_blog %}
+                    <li><a href="{% url 'blog_detail' hot_blog.id %}">{{ hot_blog.title }}</a>（{{ hot_blog.read_num_sum }}）</li>
+                {% empty %}
+                    <li>一周内暂无热门博客</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 图表配置
+        var chart = Highcharts.chart('container',{
+            chart: {
+                type: 'column',
+                margin: 75,
+                options3d: {
+                    enabled: true,
+                    alpha: 10,
+                    beta: 25,
+                    depth: 70,
+                    viewDistance: 100,      // 视图距离，它对于计算角度影响在柱图和散列图非常重要。此值不能用于3D的饼图
+                    frame: {                // Frame框架，3D图包含柱的面板，我们以X ,Y，Z的坐标系来理解，X轴与 Z轴所形成
+                        // 的面为bottom，Y轴与Z轴所形成的面为side，X轴与Y轴所形成的面为back，bottom、
+                        // side、back的属性一样，其中size为感官理解的厚度，color为面板颜色
+                        bottom: {
+                            size: 10
+                        },
+                        side: {
+                            size: 1,
+                            color: 'transparent'
+                        },
+                        back: {
+                            size: 1,
+                            color: 'transparent'
+                        }
+                    }
+                },
+            },
+            title: {
+                text: null
+            },
+            subtitle: {
+                text: ''
+            },
+            plotOptions: {
+                column: {
+                    depth: 25
+                }
+            },
+            xAxis: {
+                categories: {{ dates|safe }},
+                tickmarkPlacement: 'on',
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                title: {
+                    text: null
+                },
+                gridLineDashStyle: 'Dash'
+            },
+            series: [{
+                enabled: true,
+                name: '阅读量',
+                data: {{ read_nums }}
+            }],
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            credits: { enabled: false },
+        });
+    </script>
+{% endblock %}
